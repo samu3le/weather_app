@@ -1,15 +1,35 @@
 let d = document;
 let api_key = "c1888ac042bb5e9b1d9e4cc047c9dd4a";
 
-const fetchWeather = async(city) => {
-    await fetch(
-            "https://api.openweathermap.org/data/2.5/weather?q=" +
-            city +
-            "&units=metric&appid=" +
-            api_key
-        )
-        .then((resp) => resp.json())
-        .then((data) => displayWeather(data));
+const fetchWeather = (city) => {
+    try {
+        fetch(
+                "https://api.openweathermap.org/data/2.5/weather?q=" +
+                city +
+                "&units=metric&appid=" +
+                api_key
+            )
+            .then((resp) => {
+                if (!resp.ok)
+                    throw Error(`${resp.status} ${city} City ${resp.statusText}`);
+
+                return resp.json();
+            })
+            .then((data) => displayWeather(data))
+            .catch((error) => cleanBody(error));
+    } catch (error) {
+        cleanBody(error);
+    }
+};
+
+const cleanBody = (error) => {
+    d.querySelector(".city").innerHTML = error;
+    d.querySelector(".temp").innerHTML = "";
+    d.querySelector(".icon").src = "";
+    d.querySelector(".description").innerHTML = "";
+    d.querySelector(".humidity").innerHTML = "";
+    d.querySelector(".wind").innerHTML = "";
+    document.querySelector(".weather").classList.remove("loading");
 };
 
 const displayWeather = (data) => {
@@ -32,6 +52,7 @@ const displayWeather = (data) => {
 };
 
 const search = () => {
+    document.querySelector(".weather").classList.add("loading");
     fetchWeather(d.querySelector(".search-bar").value);
 };
 
